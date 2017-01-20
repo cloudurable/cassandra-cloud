@@ -173,8 +173,16 @@ Usage of ./cassandra-cloud:
 #### Template variable (types, and how to override them) 
 
 The table below lists the variable names. 
+A setting in the config file (`Config Name`) overrides the default value(`Default Value`). 
+`Environment Variable`s override config file settings  (`Config Name`). 
+Lastly values passed on the command line (`Command line Args`) override the config. 
 
-|Template Var Name         |Type            |Config Name          |Command line         |Environment Variable           |Default Value                   |
+The `Template Var Name`s are used by the templates. 
+
+For example the `CommitLogDir` template var can be used in a template by referring to it as `{{.CommitLogDir}}`.
+
+
+|Template Var Name         |Type            |Config Name          |Command line Args    |Environment Variable           |Default Value                   |
 |---                       |---             |---------------------|---------------------|---                            |---                             |
 |Verbose                   |bool            |verbose              |-verbose             |CASSANDRA_VERBOSE              |false                                   |
 |ClusterSeeds              |string          |cluster_seeds        |-cluster-seeds       |CASSANDRA_CLUSTER_SEEDS        |127.0.0.1                               |
