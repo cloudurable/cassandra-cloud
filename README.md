@@ -181,7 +181,6 @@ The `Template Var Name`s are used by the templates.
 
 For example the `CommitLogDir` template var can be used in a template by referring to it as `{{.CommitLogDir}}`.
 
-|:---                       |:---             |:--------------------|---------------------|:---                            |:---                             |
 |Template Var Name         |Type            |Config Name          |Command line Args    |Environment Variable           |Default Value                   |
 |:---                       |:---             |:--------------------|---------------------|:---                            |:---                             |
 |Verbose                   |bool            |verbose              |-verbose             |CASSANDRA_VERBOSE              |false                                   |
