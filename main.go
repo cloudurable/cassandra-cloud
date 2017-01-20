@@ -143,8 +143,8 @@ func printHelp(config *Config) {
 	reflectedType:=reflected.Type()
 
 
-	fmt.Printf("%-25s %-15s %-20s %-20s %-30s %s\n", "Template Var Name", "Type", "Config Name", "CMD", "ENV", "Default Value")
-
+	fmt.Printf("|%-25s |%-15s |%-20s |%-20s |%-30s |%-32s|\n", "Template Var Name", "Type", "Config Name", "Command line", "Environment Variable", "Default Value")
+	fmt.Printf("|%-25s |%-15s |%-20s |%-20s |%-30s |%-32s|\n", "---", "---", "---", "---", "---", "---")
 	// loop through the struct's fields and set the map
 	for i := 0; i < reflected.NumField(); i++ {
 		value := reflected.Field(i)
@@ -160,9 +160,9 @@ func printHelp(config *Config) {
 
 		tag := field.Tag
 		configName := tag.Get("hcl")
-		cmdName := strings.Replace(configName, "_", "-", -1)
+		cmdName := "-" + strings.Replace(configName, "_", "-", -1)
 		envName := "CASSANDRA_" + strings.ToUpper(configName)
-		fmt.Printf("%-25s %-15s %-20s %-20s %-30s %v \n", field.Name, typeName, configName,
+		fmt.Printf("|%-25s |%-15s |%-20s |%-20s |%-30s |%-40v|\n", field.Name, typeName, configName,
 			cmdName, envName, value.Interface())
 
 	}
@@ -308,14 +308,14 @@ func initDefaults(config *Config, logger lg.Logger) {
 			config.ClientListenInterface = "eth0"
 		} else {
 			logger.Debug("ClientListenAddress and ClientListenInterface were not set, setting to localhost as the OS is NOT Linux")
-			config.ClientListenInterface = "localhost"
+			config.ClientListenAddress = "localhost"
 		}
 	}
 	if config.ClusterListenAddress != "" && config.ClusterListenInterface != "" {
 		logger.Error("The cluster listen address and the cluster listen interface can't both be set")
 	} else if config.ClusterListenAddress == "" && config.ClusterListenInterface == "" {
 		logger.Debug("ClusterListenAddress and ClusterListenInterface were not set, setting to localhost")
-		config.ClusterListenInterface = "localhost"
+		config.ClusterListenAddress = "localhost"
 	}
 
 
