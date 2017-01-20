@@ -208,3 +208,11 @@ For example the `CommitLogDir` template var can be used in a template by referri
 |ClusterPort               |int             |cluster_port         |-cluster-port        |CASSANDRA_CLUSTER_PORT         |7000                                    |
 |ClusterSslPort            |int             |cluster_ssl_port     |-cluster-ssl-port    |CASSANDRA_CLUSTER_SSL_PORT     |7001                                    |
 |ClientPort                |int             |client_port          |-client-port         |CASSANDRA_CLIENT_PORT          |9042                                    |
+
+
+## About us
+[Cloudurable](http://cloudurable.com/) provides AMIs, cloudformation templates and monitoring tools 
+to support [Cassandra in production running in EC2](http://cloudurable.com/services/index.html). 
+We also teach advanced [Cassandra courses which teaches how one could develop, support and deploy Cassandra to production in AWS EC2](http://cloudurable.com/services/index.html). 
+
+## More details to follow
