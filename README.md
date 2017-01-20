@@ -49,6 +49,9 @@ data_file_directories:
 commitlog_directory: {{.CommitLogDir}}
 ```
 
+To learn the complete syntax of the template this [template syntax guide](https://golang.org/pkg/text/template/).
+
+
 The above could generate a cassandra.yaml file as follows:
 
 #### cassandra.yaml
@@ -88,7 +91,8 @@ There are also templates for  `jvm.options`, `cassandra-env.sh`, and `logback.xm
 
 ## Usage
 
-```
+
+```sh
 ./cassandra-cloud  -h
 Usage of ./cassandra-cloud:
   -client-address string
@@ -117,6 +121,13 @@ Usage of ./cassandra-cloud:
         Snitch type. Example: GossipingPropertyFileSnitch, PropertyFileSnitch, Ec2Snitch, etc. (default "SimpleSnitch")
   -v    Turns on verbose mode
 
+```
+
+Command line flag syntax:
+```
+-flag
+-flag=x
+-flag x  // non-boolean flags only
 ```
 
 ## Configuration
