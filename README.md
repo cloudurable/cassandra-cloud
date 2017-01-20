@@ -1,16 +1,12 @@
 # Cassandra Cloud
 
-***CassandraCloud*** is a tool that helps you configure Cassandra for clustered environments.
-
-It works well in *Docker*, *EC2*, and *VirtualBox* environments. 
-
-It allows you to configure Cassandra easily. 
-For example, it could be kicked off as a `USER_DATA` script in Amazon EC2 (AWS EC2).
-
-This usually runs once when an instance if first launched and then never again. 
+***CassandraCloud*** is a tool that helps you configure Cassandra for clustered environments. It works well in 
+*Docker*, *EC2*, and *VirtualBox* environments (and similar environments). It allows you to configure Cassandra easily. 
+For example, it could be kicked off as a `USER_DATA` script in Amazon EC2 (AWS EC2). ***CassandraCloud*** usually runs 
+once when an instance is first launched and then never again. 
 
 
-## Overrides
+## Config Overrides and Templates
 
 ***CassandraCloud*** allows you to override values via ***OS ENVIRONMENT*** variables. 
 There is an HCL config file, and there are command line arguments. 
