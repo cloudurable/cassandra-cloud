@@ -174,8 +174,6 @@ Usage of ./cassandra-cloud:
 
 The table below lists the variable names. 
 
-
-```
 |Template Var Name         |Type            |Config Name          |Command line         |Environment Variable           |Default Value                   |
 |---                       |---             |---                  |---                  |---                            |---                             |
 |Verbose                   |bool            |verbose              |-verbose             |CASSANDRA_VERBOSE              |false                                   |
@@ -196,5 +194,3 @@ The table below lists the variable names.
 |ClusterPort               |int             |cluster_port         |-cluster-port        |CASSANDRA_CLUSTER_PORT         |7000                                    |
 |ClusterSslPort            |int             |cluster_ssl_port     |-cluster-ssl-port    |CASSANDRA_CLUSTER_SSL_PORT     |7001                                    |
 |ClientPort                |int             |client_port          |-client-port         |CASSANDRA_CLIENT_PORT          |9042                                    |
-
-```
