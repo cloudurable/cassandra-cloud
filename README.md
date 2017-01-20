@@ -183,7 +183,7 @@ For example the `CommitLogDir` template var can be used in a template by referri
 
 
 |Template Var Name         |Type            |Config Name          |Command line Args    |Environment Variable           |Default Value                   |
-|---                       |---             |---------------------|---------------------|---                            |---                             |
+|---                       |:---             |:--------------------|---------------------|:---:                            |---                             |
 |Verbose                   |bool            |verbose              |-verbose             |CASSANDRA_VERBOSE              |false                                   |
 |ClusterSeeds              |string          |cluster_seeds        |-cluster-seeds       |CASSANDRA_CLUSTER_SEEDS        |127.0.0.1                               |
 |CassandraHome             |string          |home_dir             |-home-dir            |CASSANDRA_HOME_DIR             |/opt/cassandra                          |
