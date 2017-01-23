@@ -12,6 +12,7 @@ import (
 	"reflect"
 	"strings"
 	"C"
+	"os/exec"
 )
 
 type Config struct {
@@ -233,7 +234,7 @@ func initDefaults(config *Config, logger lg.Logger) {
 	config.MinHeapSize = strings.ToUpper(config.MinHeapSize)
 	config.MaxHeapSize = strings.ToUpper(config.MaxHeapSize)
 
-	config = gcErgonomics(config)
+	config = gcErgonomics(config, logger)
 
 	overrideWithEnvOrDefault("CASSANDRA_CLUSTER_NAME", &config.ClusterName, "mycluster", logger)
 	overrideWithEnvOrDefault("CASSANDRA_HOME_DIR", &config.CassandraHome, "/opt/cassandra", logger)
@@ -275,7 +276,7 @@ func initDefaults(config *Config, logger lg.Logger) {
 	initYamlTemplate(config.CassandraConfigTemplate, logger)
 
 }
-func gcErgonomics(config *Config) *Config {
+func gcErgonomics(config *Config, logger lg.Logger) *Config {
 	if config.G1ParallelGCThreads == "AUTO" {
 		if runtime.NumCPU() > 10 {
 			config.G1ParallelGCThreads = strconv.Itoa(runtime.NumCPU() - 1)
@@ -289,22 +290,66 @@ func gcErgonomics(config *Config) *Config {
 	if config.CmsYoungGenSize == "AUTO" {
 		config.CmsYoungGenSize = strconv.Itoa(runtime.NumCPU()) + "00MB"
 	}
-	memSize := (C.sysconf(C._SC_PHYS_PAGES) * C.sysconf(C._SC_PAGE_SIZE)) * (3 / 4)
+	memSize,err := GetMemory()
+	if err != nil {
+		logger.ErrorError("Unable to get memory size defaulting to 5GB heap", err)
+		memSize = 5000000000
+	} else {
+		memSize = memSize * 1000
+	}
+
 	if config.MaxHeapSize == "AUTO" {
-		config.MaxHeapSize = strconv.Itoa(memSize / 1000000) + "MB"
+		maxHeapSize := memSize * 7 / 10
+		config.MaxHeapSize = strconv.FormatUint( maxHeapSize / 1000000, 10 ) + "MB"
 	}
 	if config.MinHeapSize == "AUTO" {
 		config.MinHeapSize = config.MaxHeapSize
 	}
 	if config.GC == "AUTO" {
-		actualGB := memSize / 1000000000
-		if actualGB > config.G1ThresholdGBs {
+		actualGB := int(memSize / 1000000000)
+
+		if actualGB  > config.G1ThresholdGBs {
 			config.GC = "GC1"
 		} else {
 			config.GC = "CMS"
 		}
 	}
 	return config
+}
+
+
+
+func  GetMemory() (uint64, error) {
+
+	var output string
+
+	var command string
+	if runtime.GOOS == "linux" {
+		command = "/usr/bin/free"
+	} else if runtime.GOOS == "darwin" {
+		command = "/usr/local/bin/free"
+	}
+	if out, err := exec.Command(command).Output(); err != nil {
+		return 0, err
+	} else {
+		output = string(out)
+	}
+
+	lines := strings.Split(output, "\n")
+	line1 := lines[1]
+
+	var total uint64
+	var free uint64
+	var used uint64
+	var shared uint64
+	var buffer uint64
+	var available uint64
+	var mem string
+
+	fmt.Sscanf(line1, "%s %d %d %d %d %d %d", &mem, &total, &used, &free, &shared, &buffer, &available)
+
+	return free, nil
+
 }
 
 func overrideWithEnvOrDefault(envName string, value *string, defaultValue string, logger lg.Logger) {

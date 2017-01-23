@@ -12,6 +12,8 @@ import (
 
 func main() {
 
+
+
 	debug, configFilename, logger := initialCommandLineParse()
 
 	config, err := cassieConf.LoadConfig(configFilename, debug, logger)
