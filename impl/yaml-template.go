@@ -18,7 +18,7 @@ func initYamlTemplate(templateFileName string, logger lg.Logger) {
 
 const YamlTemplate = `
 
-# This file was generated with the template {{.CassandraConfigTemplate}} by cassandra-cloud.
+# This file was generated with the template {{.YamlConfigTemplate}} by cassandra-cloud.
 # You can find cassandra-cloud at https://github.com/cloudurable/cassandra-cloud.
 # Cassandra Cloud is used to automate deployment to EC2 and similar cloud environments.
 

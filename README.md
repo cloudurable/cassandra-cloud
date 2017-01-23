@@ -90,19 +90,24 @@ There are also templates for  `jvm.options`, `cassandra-env.sh`, and `logback.xm
 
 ```sh
 ./cassandra-cloud  -h
-Usage of ./cassandra-cloud:
   -client-address string
-        Client address for client driver communication. Example: 192.43.32.10, localhost, etc.
+        Client address for client driver communication. Example: 192.43.32.10, localhost, etc. (default "localhost")
   -client-interface string
-        Client address for client driver communication. Example: eth0, eth1, etc. (default "localhost")
+        Client address for client driver communication. Example: eth0, eth1, etc.
   -cluster-address string
-        Cluster address for inter-node communication. Example: 192.43.32.10, localhost, etc.
+        Cluster address for inter-node communication. Example: 192.43.32.10, localhost, etc. (default "localhost")
   -cluster-interface string
-        Cluster interface for inter-node communication.  Example: eth0, eth1, etc. (default "localhost")
+        Cluster interface for inter-node communication.  Example: eth0, eth1, etc.
   -cluster-name string
         Name of the cluster (default "My Cluster")
   -cluster-seeds string
         Comma delimited list of initial clustrer contact points for bootstrapping (default "127.0.0.1")
+  -cms-young-gen-size string
+        If using CMS as GC, selects the proper size for the CMS YoungGen. Set this to a specific size of AUTO for environment ergonomics (default "800MB")
+  -conf-jvm-options-file string
+        JVM Option location which will be overwritten with template. (default "/opt/cassandra/conf/jvm.options")
+  -conf-jvm-options-template string
+        JVM Option template location. Used to generate the jvm.options file using system ergonomics. (default "/opt/cassandra/conf/jvm-options.template")
   -conf-yaml-template string
         Location of cassandra configuration template (default "/opt/cassandra/conf/cassandra-yaml.template")
   -config string
@@ -111,8 +116,22 @@ Usage of ./cassandra-cloud:
         Location of Cassandra Data directories
   -debug
         Turn on debugging
+  -g1-concurrent-threads string
+        The count of G1 Parallel threads. Values: AUTO, or some number. Uses ergonomics to pick a number (default "8")
+  -g1-parallel-threads string
+        The count of G1 Parallel threads. Values: AUTO, or some number. Uses ergonomics to pick a thread count (default "8")
+  -gc string
+        GC type. Values: CMS, G1, or AUTO. If you set to AUTO, if heap is bigger than 5 GB (gc-g1-threshold-gbs), G1 is used, otherwise CMS. (default "GC1")
+  -gc-g1-threshold-gbs int
+        GC threshold switch. Defaults to 5 GB. If gc set to AUTO, if heap is bigger than gc-g1-threshold-gbs, G1 is used, otherwise CMS. (default 5)
+  -gc_stats_enabled
+        Enable logging GC stats from JVM.
   -help-info
         Prints out help information
+  -max-heap-size string
+        Sets the MaxHeapSize using a size string, i.e., 10GB or uses AUTO to enable system environment ergonomics. (70% of free heap) (default "4859MB")
+  -min-heap-size string
+        Sets the MaxHeapSize using a size string, i.e., 10GB or uses AUTO to enable system environment ergonomics. (Set to MaxHeapSize) (default "4859MB")
   -snitch string
         Snitch type. Example: GossipingPropertyFileSnitch, PropertyFileSnitch, Ec2Snitch, etc. (default "SimpleSnitch")
   -v    Turns on verbose mode
@@ -187,28 +206,36 @@ Lastly values passed on the command line (`Command line Args`) override the conf
 The `Template Var Name`s are used by the templates. 
 
 For example the `CommitLogDir` template var can be used in a template by referring to it as `{{.CommitLogDir}}`.
-
-|Template Var Name         |Type            |Config Name          |Command line Args    |Environment Variable           |Default Value                   |
-|:---                       |:---             |:--------------------|---------------------|:---                            |:---                             |
-|Verbose                   |bool            |verbose              |-verbose             |CASSANDRA_VERBOSE              |false                                   |
-|ClusterSeeds              |string          |cluster_seeds        |-cluster-seeds       |CASSANDRA_CLUSTER_SEEDS        |127.0.0.1                               |
-|CassandraHome             |string          |home_dir             |-home-dir            |CASSANDRA_HOME_DIR             |/opt/cassandra                          |
-|MultiDataCenter           |bool            |multi_dc             |-multi-dc            |CASSANDRA_MULTI_DC             |false                                   |
+|Template Var Name         |Type            |Config Name          |Command line         |Environment Variable           |Default Value                   |
+|---                       |---             |---                  |---                  |---                            |---                             |
 |DataDirs                  |[]string        |data_dirs            |-data-dirs           |CASSANDRA_DATA_DIRS            |[/opt/cassandra/data                     ]|
-|CommitLogDir              |string          |commit_log_dir       |-commit-log-dir      |CASSANDRA_COMMIT_LOG_DIR       |/opt/cassandra/commitlog                |
+|CassandraHome             |string          |home_dir             |-home-dir            |CASSANDRA_HOME_DIR             |/opt/cassandra                          |
+|ClusterSeeds              |string          |cluster_seeds        |-cluster-seeds       |CASSANDRA_CLUSTER_SEEDS        |127.0.0.1                               |
 |ClusterListenAddress      |string          |cluster_address      |-cluster-address     |CASSANDRA_CLUSTER_ADDRESS      |localhost                               |
 |ClusterListenInterface    |string          |cluster_interface    |-cluster-interface   |CASSANDRA_CLUSTER_INTERFACE    |                                        |
 |ClientListenAddress       |string          |client_address       |-client-address      |CASSANDRA_CLIENT_ADDRESS       |localhost                               |
 |ClientListenInterface     |string          |client_interface     |-client-interface    |CASSANDRA_CLIENT_INTERFACE     |                                        |
-|Snitch                    |string          |snitch               |-snitch              |CASSANDRA_SNITCH               |SimpleSnitch                            |
+|ClientPort                |int             |client_port          |-client-port         |CASSANDRA_CLIENT_PORT          |9042                                    |
 |ClusterName               |string          |cluster_name         |-cluster-name        |CASSANDRA_CLUSTER_NAME         |My Cluster                              |
-|NumTokens                 |int             |num_tokens           |-num-tokens          |CASSANDRA_NUM_TOKENS           |32                                      |
-|CassandraConfigTemplate   |string          |conf_yaml_template   |-conf-yaml-template  |CASSANDRA_CONF_YAML_TEMPLATE   |/opt/cassandra/conf/cassandra-yaml.template|
-|CassandraConfigFileName   |string          |conf_yaml_file       |-conf-yaml-file      |CASSANDRA_CONF_YAML_FILE       |/opt/cassandra/conf/cassandra.yaml      |
 |ClusterPort               |int             |cluster_port         |-cluster-port        |CASSANDRA_CLUSTER_PORT         |7000                                    |
 |ClusterSslPort            |int             |cluster_ssl_port     |-cluster-ssl-port    |CASSANDRA_CLUSTER_SSL_PORT     |7001                                    |
-|ClientPort                |int             |client_port          |-client-port         |CASSANDRA_CLIENT_PORT          |9042                                    |
-
+|CmsYoungGenSize           |string          |cms_young_gen_size   |-cms-young-gen-size  |CASSANDRA_CMS_YOUNG_GEN_SIZE   |800MB                                   |
+|CommitLogDir              |string          |commit_log_dir       |-commit-log-dir      |CASSANDRA_COMMIT_LOG_DIR       |/opt/cassandra/commitlog                |
+|GCStatsEnabled            |bool            |gc_stats_enabled     |-gc-stats-enabled    |CASSANDRA_GC_STATS_ENABLED     |false                                   |
+|GC                        |string          |gc                   |-gc                  |CASSANDRA_GC                   |GC1  if over 5GB heap free                                   |
+|G1ThresholdGBs            |int             |gc_g1_threshold_gbs  |-gc-g1-threshold-gbs |CASSANDRA_GC_G1_THRESHOLD_GBS  |5                                       |
+|G1ParallelGCThreads       |string          |g1_parallel_threads  |-g1-parallel-threads |CASSANDRA_G1_PARALLEL_THREADS  |8                                       |
+|G1ConcGCThreads           |string          |g1_concurrent_threads |-g1-concurrent-threads |CASSANDRA_G1_CONCURRENT_THREADS |8                                       |
+|JvmOptionsFileName        |string          |conf_jvm_options_file |-conf-jvm-options-file |CASSANDRA_CONF_JVM_OPTIONS_FILE |/opt/cassandra/conf/jvm.options         |
+|JvmOptionsTemplate        |string          |conf_jvm_options_template |-conf-jvm-options-template |CASSANDRA_CONF_JVM_OPTIONS_TEMPLATE |/opt/cassandra/conf/jvm-options.template|
+|MinHeapSize               |string          |min_heap_size        |-min-heap-size       |CASSANDRA_MIN_HEAP_SIZE        |4859MB                                  |
+|MaxHeapSize               |string          |max_heap_size        |-max-heap-size       |CASSANDRA_MAX_HEAP_SIZE        |4859MB                                  |
+|MultiDataCenter           |bool            |multi_dc             |-multi-dc            |CASSANDRA_MULTI_DC             |false                                   |
+|NumTokens                 |int             |num_tokens           |-num-tokens          |CASSANDRA_NUM_TOKENS           |32                                      |
+|Snitch                    |string          |snitch               |-snitch              |CASSANDRA_SNITCH               |SimpleSnitch                            |
+|Verbose                   |bool            |verbose              |-verbose             |CASSANDRA_VERBOSE              |false                                   |
+|YamlConfigTemplate        |string          |conf_yaml_template   |-conf-yaml-template  |CASSANDRA_CONF_YAML_TEMPLATE   |/opt/cassandra/conf/cassandra-yaml.template|
+|YamlConfigFileName        |string          |conf_yaml_file       |-conf-yaml-file      |CASSANDRA_CONF_YAML_FILE       |/opt/cassandra/conf/cassandra.yaml      |
 
 ## About us
 [Cloudurable](http://cloudurable.com/) provides AMIs, cloudformation templates and monitoring tools 

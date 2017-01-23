@@ -1,12 +1,30 @@
 package impl
 
+import (
+	"os"
+	"io/ioutil"
+	lg "github.com/advantageous/go-logback/logging"
+)
+
+func initJvmOptionsTemplate(templateFileName string, logger lg.Logger) {
+	if _, err := os.Stat(templateFileName); os.IsNotExist(err) {
+		logger.Debug("Cassandra JVM Option template does not exist so we are creating it", templateFileName)
+		err = ioutil.WriteFile(templateFileName, []byte(JvmOptionsTemplate), 0644)
+		if err != nil {
+			logger.ErrorError("Unable to write tempalte file "+templateFileName, err)
+		}
+	}
+}
 
 const JvmOptionsTemplate = `
 
 # To replace a node that has died, restart a new node in its place specifying the address of the
 # dead node. The new node must not have any data in its data directory, that is, it must be in the
 # same state as before bootstrapping.
-#-Dcassandra.replace_address=listen_address or broadcast_address of dead node
+
+{{if .ReplaceAddress}}# Replacing address
+-Dcassandra.replace_address={{.ReplaceAddress}}
+{{end}}
 
 #-Dcassandra.join_ring=true|false
 # Set to false to clear all gossip state for the node on restart. Use when you have changed node
@@ -119,10 +137,11 @@ const JvmOptionsTemplate = `
 #  GC SETTINGS  #
 #################
 
-### CMS Settings
+## Setting  up {{.GC}}
 
 
 {{if .GC eq "CMS"}}
+### CMS Settings
 # Young generation size is automatically calculated by cassandra-env
 # based on this formula: min(100 * num_cores, 1/4 * heap size)
 #
@@ -152,7 +171,7 @@ const JvmOptionsTemplate = `
 -XX:+CMSClassUnloadingEnabled
 {{end}}
 
-{{if .GC eq "G1"}}
+{{if eq .GC "G1" }}
 ## Use the Hotspot garbage-first collector.
 -XX:+UseG1GC
 #

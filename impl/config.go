@@ -16,20 +16,13 @@ import (
 )
 
 type Config struct {
-	Verbose bool `hcl:"verbose"`
+	DataDirs []string `hcl:"data_dirs"`
+
+	CassandraHome string `hcl:"home_dir"`
 	// Addresses of hosts that are deemed contact points.
 	// Cassandra nodes use this list of hosts to find each other and learn
 	// the topology of the ring.  You must change this if you are running  multiple nodes!
 	ClusterSeeds string `hcl:"cluster_seeds"`
-
-	CassandraHome string `hcl:"home_dir"`
-
-	MultiDataCenter bool `hcl:"multi_dc"`
-
-	DataDirs []string `hcl:"data_dirs"`
-
-	CommitLogDir string `hcl:"commit_log_dir"`
-
 	// Address or interface to bind to and tell other Cassandra nodes to connect to.
 	// You _must_ change this if you want multiple nodes to be able to communicate!
 	// Set listen_address OR listen_interface, not both.
@@ -38,57 +31,62 @@ type Config struct {
 	// (hostname, name resolution, etc), and the Right Thing is to use the
 	// address associated with the hostname (it might not be).
 	ClusterListenAddress string `hcl:"cluster_address"`
-
 	// Set listen_address OR listen_interface, not both. Interfaces must correspond
 	// to a single address, IP aliasing is not supported.
 	ClusterListenInterface string `hcl:"cluster_interface"`
-
 	// Address to listen for client connections.
 	ClientListenAddress string `hcl:"client_address"`
 	// Interface to listen for client connections. Address and interface can't both be set.
 	ClientListenInterface string `hcl:"client_interface"`
-	// Cassandra snitch type.
-	Snitch string `hcl:"snitch"`
+	ClientPort int `hcl:"client_port"`
 	//Name of the cassandra cluster.
 	ClusterName string `hcl:"cluster_name"`
-	//Number of tokens that this node wants/has. Used for Cassandra VNODES.
-	NumTokens int `hcl:"num_tokens"`
-
-	//Location of template file for cassandra conf.
-	CassandraConfigTemplate string `hcl:"conf_yaml_template"`
-
-	//Location of cassandra yaml config file.
-	CassandraConfigFileName string `hcl:"conf_yaml_file"`
-
 	ClusterPort    int `hcl:"cluster_port"`
 	ClusterSslPort int `hcl:"cluster_ssl_port"`
+	//AUTO, or a number string, i.e., 100MB
+	CmsYoungGenSize string `hcl:"cms_young_gen_size"`
+	CommitLogDir string `hcl:"commit_log_dir"`
 
-	ClientPort int `hcl:"client_port"`
+	ReplaceAddress string `hcl:"replace_address"`
 
 	//GC stats
 	GCStatsEnabled bool `hcl:"gc_stats_enabled"`
-
 	// CMS, G1, AUTO - Auto uses G1 if heap is over 8GB (default) but CMS if under.
 	GC string `hcl:"gc"`
-
 	//Threshold in GB of when to use G1 vs CMS
-	G1ThresholdGBs int `hcl:"gc_g1_threshold"`
-
+	G1ThresholdGBs int `hcl:"gc_g1_threshold_gbs"`
 	//AUTO, or a number
 	G1ParallelGCThreads string `hcl:"g1_parallel_threads"`
-
 	//AUTO or the number or threads
 	G1ConcGCThreads string `hcl:"g1_concurrent_threads"`
 
 
-	//AUTO, or a number string, i.e., 100MB
-	CmsYoungGenSize string `hcl:"cms_young_gen_size"`
-
+	//Location of cassandra jvm options file.
+	JvmOptionsFileName string `hcl:"conf_jvm_options_file"`
+	//Location of jvm options template.
+	JvmOptionsTemplate string `hcl:"conf_jvm_options_template"`
 
 	//AUTO, or a number string, i.e., 5GB
 	MinHeapSize string `hcl:"min_heap_size"`
 	//AUTO, or a number string, i.e., 5GB
 	MaxHeapSize string `hcl:"max_heap_size"`
+	MultiDataCenter bool `hcl:"multi_dc"`
+
+	//Number of tokens that this node wants/has. Used for Cassandra VNODES.
+	NumTokens int `hcl:"num_tokens"`
+
+	// Cassandra snitch type.
+	Snitch string `hcl:"snitch"`
+
+	Verbose bool `hcl:"verbose"`
+
+
+	//Location of template file for cassandra conf.
+	YamlConfigTemplate string `hcl:"conf_yaml_template"`
+	//Location of cassandra yaml config file.
+	YamlConfigFileName string `hcl:"conf_yaml_file"`
+
+
 }
 
 func initConfigFile(configFileName string, logger lg.Logger) {
@@ -206,22 +204,10 @@ cluster_name = "My Cluster"
 
 func initDefaults(config *Config, logger lg.Logger) {
 
-	// CMS, G1, AUTO - Auto uses G1 if heap is over 8GB (default) but CMS if under.
-	//GC string `hcl:"gc"`
-
-	//AUTO, or a number
-	//ParallelGCThreads string `hcl:"gc_parallel_threads"`
-
-	//AUTO or the number or threads
-	//ConcGCThreads string `hcl:"gc_concurrent_threads"`
-
-	//Threshold in GB of when to use G1 vs CMS
-	//G1ThresholdGBs int `hcl:"gc_g1_threshold"`
-
 	overrideWithEnvOrDefault("CASSANDRA_GC", &config.GC, "AUTO", logger)
 	overrideWithEnvOrDefault("CASSANDRA_G1_PARALLEL_THREADS", &config.G1ParallelGCThreads, "AUTO", logger)
 	overrideWithEnvOrDefault("CASSANDRA_G1_CONCURRENT_THREADS", &config.G1ConcGCThreads, "AUTO", logger)
-	overrideNumberWithEnvOrDefault("CASSANDRA_G1_THRESHOLD_GB", &config.G1ThresholdGBs, 5, logger)
+	overrideNumberWithEnvOrDefault("CASSANDRA_GC_G1_THRESHOLD_GB", &config.G1ThresholdGBs, 5, logger)
 	overrideWithEnvOrDefault("CASSANDRA_CMS_YOUNG_GEN_SIZE", &config.CmsYoungGenSize, "AUTO", logger)
 	overrideWithEnvOrDefault("CASSANDRA_MAX_HEAP_SIZE", &config.MaxHeapSize, "AUTO", logger)
 	overrideWithEnvOrDefault("CASSANDRA_MIN_HEAP_SIZE", &config.MinHeapSize, "AUTO", logger)
@@ -238,10 +224,15 @@ func initDefaults(config *Config, logger lg.Logger) {
 
 	overrideWithEnvOrDefault("CASSANDRA_CLUSTER_NAME", &config.ClusterName, "mycluster", logger)
 	overrideWithEnvOrDefault("CASSANDRA_HOME_DIR", &config.CassandraHome, "/opt/cassandra", logger)
-	overrideWithEnvOrDefault("CASSANDRA_YAML_TEMPLATE", &config.CassandraConfigTemplate,
+	overrideWithEnvOrDefault("CASSANDRA_CONF_YAML_TEMPLATE", &config.YamlConfigTemplate,
 		config.CassandraHome+"/conf/cassandra-yaml.template", logger)
-	overrideWithEnvOrDefault("CASSANDRA_YAML_FILE", &config.CassandraConfigFileName,
+	overrideWithEnvOrDefault("CASSANDRA_CONF_YAML_FILE", &config.YamlConfigFileName,
 		config.CassandraHome+"/conf/cassandra.yaml", logger)
+	overrideWithEnvOrDefault("CASSANDRA_CONF_JVM_OPTIONS_TEMPLATE", &config.JvmOptionsTemplate,
+		config.CassandraHome+"/conf/jvm-options.template", logger)
+	overrideWithEnvOrDefault("CASSANDRA_CONF_JVM_OPTIONS_FILE", &config.JvmOptionsFileName,
+		config.CassandraHome+"/conf/jvm.options", logger)
+
 	overrideWithEnvOrDefault("CASSANDRA_SNITCH", &config.Snitch, "SimpleSnitch", logger)
 	overrideWithEnvOrDefault("CASSANDRA_CLUSTER_SEEDS", &config.ClusterSeeds, "127.0.0.1", logger)
 	overrideWithEnvOrDefault("CASSANDRA_CLIENT_INTERFACE", &config.ClientListenInterface, "", logger)
@@ -249,6 +240,8 @@ func initDefaults(config *Config, logger lg.Logger) {
 	overrideWithEnvOrDefault("CASSANDRA_CLUSTER_INTERFACE", &config.ClusterListenInterface, "", logger)
 	overrideWithEnvOrDefault("CASSANDRA_CLUSTER_ADDRESS", &config.ClusterListenAddress, "", logger)
 	overrideWithEnvOrDefault("CASSANDRA_COMMIT_LOG_DIR", &config.CommitLogDir, config.CassandraHome+"/commitlog", logger)
+
+	overrideWithEnvOrDefault("CASSANDRA_REPLACE_ADDRESS", &config.ReplaceAddress, "", logger)
 
 	overrideNumberWithEnvOrDefault("CASSANDRA_NUM_TOKENS", &config.NumTokens, 32, logger)
 	overrideNumberWithEnvOrDefault("CASSANDRA_CLUSTER_PORT", &config.ClusterPort, 7000, logger)
@@ -273,7 +266,9 @@ func initDefaults(config *Config, logger lg.Logger) {
 		config.ClusterListenAddress = "localhost"
 	}
 
-	initYamlTemplate(config.CassandraConfigTemplate, logger)
+	initYamlTemplate(config.YamlConfigTemplate, logger)
+
+	initJvmOptionsTemplate(config.JvmOptionsTemplate, logger)
 
 }
 func gcErgonomics(config *Config, logger lg.Logger) *Config {
@@ -290,13 +285,8 @@ func gcErgonomics(config *Config, logger lg.Logger) *Config {
 	if config.CmsYoungGenSize == "AUTO" {
 		config.CmsYoungGenSize = strconv.Itoa(runtime.NumCPU()) + "00MB"
 	}
-	memSize,err := GetMemory()
-	if err != nil {
-		logger.ErrorError("Unable to get memory size defaulting to 5GB heap", err)
-		memSize = 5000000000
-	} else {
-		memSize = memSize * 1000
-	}
+
+	memSize := getMemory(logger)
 
 	if config.MaxHeapSize == "AUTO" {
 		maxHeapSize := memSize * 7 / 10
@@ -309,12 +299,23 @@ func gcErgonomics(config *Config, logger lg.Logger) *Config {
 		actualGB := int(memSize / 1000000000)
 
 		if actualGB  > config.G1ThresholdGBs {
-			config.GC = "GC1"
+			config.GC = "G1"
 		} else {
 			config.GC = "CMS"
 		}
 	}
 	return config
+}
+
+func getMemory(logger lg.Logger) uint64 {
+	memSize,err := GetMemory()
+	if err != nil {
+		logger.ErrorError("Unable to get memory size defaulting to 5GB heap", err)
+		memSize = 5000000000
+	} else {
+		memSize = memSize * 1000
+	}
+	return memSize
 }
 
 
@@ -399,13 +400,48 @@ func bindCommandlineArgs(config *Config, logger lg.Logger) {
 	flag.StringVar(&config.ClientListenAddress, "client-address", config.ClientListenAddress,
 		"Client address for client driver communication. Example: 192.43.32.10, localhost, etc.")
 
+
+	flag.StringVar(&config.ReplaceAddress, "-replace-address", config.ReplaceAddress,
+		"Replace address used to replace a Cassandra node that has failed or is being replaced.")
+
 	flag.StringVar(&config.ClientListenInterface, "client-interface", config.ClientListenInterface,
 		"Client address for client driver communication. Example: eth0, eth1, etc.")
 
 	flag.StringVar(&config.Snitch, "snitch", config.Snitch,
 		"Snitch type. Example: GossipingPropertyFileSnitch, PropertyFileSnitch, Ec2Snitch, etc.")
 
-	flag.StringVar(&config.CassandraConfigTemplate, "conf-yaml-template", config.CassandraConfigTemplate,
+	flag.StringVar(&config.GC, "gc", config.GC,
+		"GC type. Values: CMS, G1, or AUTO. If you set to AUTO, if heap is bigger than 5 GB (gc-g1-threshold-gbs), G1 is used, otherwise CMS.")
+
+	flag.IntVar(&config.G1ThresholdGBs, "gc-g1-threshold-gbs", config.G1ThresholdGBs,
+		"GC threshold switch. Defaults to 5 GB. If gc set to AUTO, if heap is bigger than gc-g1-threshold-gbs, G1 is used, otherwise CMS.")
+
+	flag.StringVar(&config.JvmOptionsTemplate, "conf-jvm-options-template", config.JvmOptionsTemplate,
+		"JVM Option template location. Used to generate the jvm.options file using system ergonomics.")
+
+	flag.StringVar(&config.JvmOptionsFileName, "conf-jvm-options-file", config.JvmOptionsFileName,
+		"JVM Option location which will be overwritten with template.")
+
+
+	flag.StringVar(&config.G1ParallelGCThreads, "g1-parallel-threads", config.G1ParallelGCThreads,
+		"The count of G1 Parallel threads. Values: AUTO, or some number. Uses ergonomics to pick a thread count")
+
+	flag.StringVar(&config.G1ConcGCThreads, "g1-concurrent-threads", config.G1ConcGCThreads,
+		"The count of G1 Parallel threads. Values: AUTO, or some number. Uses ergonomics to pick a number")
+
+	flag.BoolVar(&config.GCStatsEnabled, "gc_stats_enabled", config.GCStatsEnabled,
+		"Enable logging GC stats from JVM.")
+
+	flag.StringVar(&config.CmsYoungGenSize, "cms-young-gen-size", config.CmsYoungGenSize,
+		"If using CMS as GC, selects the proper size for the CMS YoungGen. Set this to a specific size of AUTO for environment ergonomics")
+
+	flag.StringVar(&config.MaxHeapSize, "max-heap-size", config.MaxHeapSize,
+		"Sets the MaxHeapSize using a size string, i.e., 10GB or uses AUTO to enable system environment ergonomics. (70% of free heap)")
+
+	flag.StringVar(&config.MinHeapSize, "min-heap-size", config.MinHeapSize,
+		"Sets the MaxHeapSize using a size string, i.e., 10GB or uses AUTO to enable system environment ergonomics. (Set to MaxHeapSize)")
+
+	flag.StringVar(&config.YamlConfigTemplate, "conf-yaml-template", config.YamlConfigTemplate,
 		"Location of cassandra configuration template")
 
 	dataDir := flag.String("data-dirs", "", "Location of Cassandra Data directories")

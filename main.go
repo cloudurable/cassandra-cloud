@@ -25,8 +25,8 @@ func main() {
 	}
 
 
-	cassieConf.ProcessTemplate(config.CassandraConfigTemplate, config.CassandraConfigFileName, config, logger)
-
+	cassieConf.ProcessTemplate(config.YamlConfigTemplate, config.YamlConfigFileName, config, logger)
+	cassieConf.ProcessTemplate(config.JvmOptionsTemplate, config.JvmOptionsFileName, config, logger)
 }
 
 func initialCommandLineParse() (bool, string, lg.Logger) {
