@@ -290,7 +290,7 @@ func gcErgonomics(config *Config, logger lg.Logger) *Config {
 
 	if config.MaxHeapSize == "AUTO" {
 		maxHeapSize := memSize * 7 / 10
-		config.MaxHeapSize = strconv.FormatUint( maxHeapSize / 1000000, 10 ) + "MB"
+		config.MaxHeapSize = strconv.FormatUint( maxHeapSize / 1000000, 10 ) + "m"
 	}
 	if config.MinHeapSize == "AUTO" {
 		config.MinHeapSize = config.MaxHeapSize
