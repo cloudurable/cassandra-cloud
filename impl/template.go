@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"text/template"
 	lg "github.com/advantageous/go-logback/logging"
-
 )
 
 func ProcessTemplate(inputFileName string, outputFileName string, any interface{}, logger lg.Logger) error {
@@ -17,12 +16,20 @@ func ProcessTemplate(inputFileName string, outputFileName string, any interface{
 		return err
 	}
 
-	template, err := template.New("test").Parse(string(bytes))
+	theTemplate, err := template.New("test").Parse(string(bytes))
 	if err != nil {
 		logger.Errorf("Unable to parse template %s  \n", inputFileName)
 		logger.ErrorError("Error was", err)
 		return err
 	}
+
+
+	//funcMap := template.FuncMap{
+	//			// The name "title" is what the function will be called in the template text.
+	//				"title": strings.Title,
+	//			}
+	//
+	//theTemplate.Funcs(funcMap)
 
 	outputFile, err := os.Create(outputFileName)
 	if err != nil {
@@ -30,7 +37,7 @@ func ProcessTemplate(inputFileName string, outputFileName string, any interface{
 		return err
 	}
 	defer outputFile.Close()
-	template.Execute(outputFile, any)
+	theTemplate.Execute(outputFile, any)
 	return nil
 }
 

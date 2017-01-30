@@ -140,7 +140,7 @@ const JvmOptionsTemplate = `
 ## Setting  up {{.GC}}
 
 
-{{if .GC eq "CMS"}}
+{{if eq .GC "CMS"}}
 ### CMS Settings
 # Young generation size is automatically calculated by cassandra-env
 # based on this formula: min(100 * num_cores, 1/4 * heap size)
