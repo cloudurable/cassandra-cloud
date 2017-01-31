@@ -278,7 +278,7 @@ func gcErgonomics(config *Config, logger lg.Logger) *Config {
 		config.G1ConcGCThreads = config.G1ParallelGCThreads
 	}
 	if config.CmsYoungGenSize == "AUTO" {
-		config.CmsYoungGenSize = strconv.Itoa(runtime.NumCPU()) + "00MB"
+		config.CmsYoungGenSize = strconv.Itoa(runtime.NumCPU()) + "00m"
 	}
 
 	memSize := getMemory(logger)
