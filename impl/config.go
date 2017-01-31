@@ -251,13 +251,8 @@ func initDefaults(config *Config, logger lg.Logger) {
 	if config.ClientListenAddress != "" && config.ClientListenInterface != "" {
 		logger.Error("The client listen address and the client listen interface can't both be set")
 	} else if config.ClientListenAddress == "" && config.ClientListenInterface == "" {
-		if runtime.GOOS == "linux" {
-			logger.Debug("ClientListenAddress and ClientListenInterface were not set, setting to eth0 as the OS is Linux")
-			config.ClientListenInterface = "eth0"
-		} else {
-			logger.Debug("ClientListenAddress and ClientListenInterface were not set, setting to localhost as the OS is NOT Linux")
-			config.ClientListenAddress = "localhost"
-		}
+		logger.Debug("ClientListenAddress and ClientListenInterface were not set, setting to localhost")
+		config.ClientListenAddress = "localhost"
 	}
 	if config.ClusterListenAddress != "" && config.ClusterListenInterface != "" {
 		logger.Error("The cluster listen address and the cluster listen interface can't both be set")
