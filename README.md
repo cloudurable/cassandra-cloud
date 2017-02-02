@@ -206,6 +206,8 @@ Lastly values passed on the command line (`Command line Args`) override the conf
 The `Template Var Name`s are used by the templates. 
 
 For example the `CommitLogDir` template var can be used in a template by referring to it as `{{.CommitLogDir}}`.
+
+
 |Template Var Name         |Type            |Config Name          |Command line         |Environment Variable           |Default Value                   |
 |---                       |---             |---                  |---                  |---                            |---                             |
 |DataDirs                  |[]string        |data_dirs            |-data-dirs           |CASSANDRA_DATA_DIRS            |[/opt/cassandra/data                     ]|
