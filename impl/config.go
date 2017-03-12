@@ -31,6 +31,7 @@ type Config struct {
 	// (hostname, name resolution, etc), and the Right Thing is to use the
 	// address associated with the hostname (it might not be).
 	ClusterListenAddress string `hcl:"cluster_address"`
+	ClusterBroadcastAddress string `hcl:"cluster_broadcast_address"`
 	// Set listen_address OR listen_interface, not both. Interfaces must correspond
 	// to a single address, IP aliasing is not supported.
 	ClusterListenInterface string `hcl:"cluster_interface"`
@@ -239,6 +240,8 @@ func initDefaults(config *Config, logger lg.Logger) {
 	overrideWithEnvOrDefault("CASSANDRA_CLIENT_ADDRESS", &config.ClientListenAddress, "", logger)
 	overrideWithEnvOrDefault("CASSANDRA_CLUSTER_INTERFACE", &config.ClusterListenInterface, "", logger)
 	overrideWithEnvOrDefault("CASSANDRA_CLUSTER_ADDRESS", &config.ClusterListenAddress, "", logger)
+	overrideWithEnvOrDefault("CASSANDRA_CLUSTER_BROADCAST_ADDRESS", &config.ClusterBroadcastAddress, "", logger)
+
 	overrideWithEnvOrDefault("CASSANDRA_COMMIT_LOG_DIR", &config.CommitLogDir, config.CassandraHome+"/commitlog", logger)
 
 	overrideWithEnvOrDefault("CASSANDRA_REPLACE_ADDRESS", &config.ReplaceAddress, "", logger)
@@ -388,6 +391,9 @@ func bindCommandlineArgs(config *Config, logger lg.Logger) {
 
 	flag.StringVar(&config.ClusterListenAddress, "cluster-address", config.ClusterListenAddress,
 		"Cluster address for inter-node communication. Example: 192.43.32.10, localhost, etc.")
+
+	flag.StringVar(&config.ClusterBroadcastAddress, "cluster-broadcast-address", config.ClusterListenAddress,
+		"Cluster address for cross region communication. Example: 55.43.32.10, localhost, etc.")
 
 	flag.StringVar(&config.ClusterListenInterface, "cluster-interface", config.ClusterListenInterface,
 		"Cluster interface for inter-node communication.  Example: eth0, eth1, etc.")
