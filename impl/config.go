@@ -393,7 +393,7 @@ func bindCommandlineArgs(config *Config, logger lg.Logger) {
 		"Cluster address for inter-node communication. Example: 192.43.32.10, localhost, etc.")
 
 	flag.StringVar(&config.ClusterBroadcastAddress, "cluster-broadcast-address", config.ClusterListenAddress,
-		"Cluster address for cross region communication. Example: 55.43.32.10, localhost, etc.")
+		"Cluster address for cross region communication. Example: 55.43.32.10, etc.")
 
 	flag.StringVar(&config.ClusterListenInterface, "cluster-interface", config.ClusterListenInterface,
 		"Cluster interface for inter-node communication.  Example: eth0, eth1, etc.")

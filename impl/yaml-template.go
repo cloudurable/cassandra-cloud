@@ -38,7 +38,6 @@ rpc_interface: {{.ClientListenInterface}}{{end}}
 
 
 {{if .ClusterBroadcastAddress}}# Broadcast address for storage cluster communication
-listen_on_broadcast_address: true
 broadcast_address: {{.ClusterBroadcastAddress}}{{end}}
 {{if .ClusterListenAddress}}# Listen address for storage cluster communication
 listen_address: {{.ClusterListenAddress}}{{end}}
